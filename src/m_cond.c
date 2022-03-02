@@ -20,6 +20,7 @@
 #include "g_game.h" // record info
 #include "r_skins.h" // numskins
 #include "r_draw.h" // R_GetColorByName
+#include "p_setup.h" // P_GetGrade
 
 // Map triggers for linedef executors
 // 32 triggers, one bit each
@@ -324,6 +325,44 @@ UINT8 M_CheckLevelEmblems(void)
 				res = (G_GetBestNightsTime(levelnum, 0) <= (unsigned)valToReach);
 				break;
 			default: // unreachable but shuts the compiler up.
+				continue;
+		}
+
+		emblemlocations[i].collected = res;
+		if (res)
+			++somethingUnlocked;
+	}
+	return somethingUnlocked;
+}
+
+// Check for ring/time emblems obtained during regular gameplay
+UINT8 M_CheckLevelEmblemsSP(void)
+{
+	INT32 i;
+	UINT8 res;
+	UINT8 somethingUnlocked = 0;
+
+	// Update Score, Time, Rings emblems
+	for (i = 0; i < numemblems; ++i)
+	{
+		if (emblemlocations[i].type <= ET_SKIN || emblemlocations[i].type == ET_MAP || emblemlocations[i].collected || (emblemlocations[i].level != gamemap))
+			continue;
+
+		switch (emblemlocations[i].type)
+		{
+			case ET_TIME: // Requires time on map <= x
+				res = ((INT32)players[consoleplayer].realtime <= emblemlocations[i].var);
+				break;
+			case ET_NTIME: // Requires NiGHTS time on map <= x
+				res = ((INT32)players[consoleplayer].realtime <= emblemlocations[i].var);
+				break;
+			case ET_RINGS: // Requires rings on map >= x
+				res = (players[consoleplayer].rings >= emblemlocations[i].var);
+				break;
+			case ET_NGRADE: // Requires NiGHTS grade on map >= x
+				res = (P_GetGrade(players[consoleplayer].lastmarescore, gamemap, players[consoleplayer].lastmare) >= emblemlocations[i].var);
+				break;
+			default: // Score is ignored since it carries over
 				continue;
 		}
 

@@ -1557,7 +1557,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 
 	if (player->bot == BOT_2PHUMAN)
 		cmd->angleturn = (INT16)((localangle - *myangle) >> 16);
-	
+
 	*myangle += (cmd->angleturn<<16);
 
 	if (controlstyle == CS_LMAOGALOG) {
@@ -3897,6 +3897,7 @@ static void G_DoCompleted(void)
 {
 	INT32 i;
 	boolean spec = G_IsSpecialStage(gamemap);
+	UINT8 earnedEmblems = 0;
 
 	tokenlist = 0; // Reset the list
 
@@ -4028,6 +4029,9 @@ static void G_DoCompleted(void)
 		else if (cv_advancemap.value == 2) // Go to random map.
 			nextmap = RandMap(G_TOLFlag(gametype), prevmap);
 	}
+
+	if (!(netgame || multiplayer) && !(modifiedgame && !savemoddata) && (earnedEmblems = M_CheckLevelEmblemsSP()))
+		CONS_Printf(M_GetText("\x82" "Earned %hu emblem%s for Record Attack records.\n"), (UINT16)earnedEmblems, earnedEmblems > 1 ? "s" : "");
 
 	// We are committed to this map now.
 	// We may as well allocate its header if it doesn't exist
